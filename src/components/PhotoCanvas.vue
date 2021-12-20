@@ -5,8 +5,8 @@
       <select name='numOfPca' id='number-selector-pca' @change="onChange($event)" v-model="selectedNumber">
       <option value = '000'>1000</option>
       <option value = '005'>5999</option>
-      <option value = '010'>19999</option>
-      <option value = '100'>199999</option>
+      <option value = '010'>10999</option>
+      <option value = '100'>100999</option>
       <option value = '202'>202500</option>
     </select>
     </div>
