@@ -1,0 +1,120 @@
+<template>
+  <div class="div2">
+    <div v-bind="getRootProps()">
+      <input accept =".zip" v-bind="getInputProps()" />
+      <p v-if="isDragActive">Drop the files here ...</p>
+      <p v-else>Drag 'n' drop files here(only first zip file will be processed)</p>
+    </div>
+  </div>
+  <br>
+  <span>OR</span>
+  <br>
+  <div>
+    <input id="file-button" type="file" @change="onFileSelected" accept =".zip"/>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+import { useDropzone } from 'vue3-dropzone'
+export default {
+  name: 'ImportFiles',
+  emits: ['catchEmit'],
+  setup (props, { emit }) {
+    let disabled = true
+    let selectedFile = null
+    let responseStatus = null
+    const formDataToSend = new FormData()
+
+    function onDrop (acceptFiles, rejectReasons) {
+      selectedFile = null
+      disabled = true
+      console.log('AcceptFiles: ', acceptFiles)
+      let found = false
+      acceptFiles.forEach(element => {
+        if (element.type === 'application/x-zip-compressed' && found === false) {
+          selectedFile = element
+          found = true
+          formDataToSend.append('file', selectedFile)
+          console.log('axios: ', formDataToSend.get('file'))
+          axios.post('http://localhost:5000/dataset', formDataToSend, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            // 'Content-Type': 'application/x-zip-compressed'
+            }
+          })
+            .then(response => {
+              responseStatus = response.status
+              console.log(response.data, formDataToSend)
+            }).catch(error => {
+              console.log(error, responseStatus)
+            })
+          // emit('catchEmit')
+          if (responseStatus === 200 || responseStatus === 304) {
+            emit('catchEmit')
+          }
+        }
+      })
+      // console.log('File to send: ', selectedFile)
+      // console.log('Rejected reason: ', rejectReasons)
+    }
+    const { getRootProps, getInputProps, ...rest } = useDropzone({ onDrop })
+    return {
+      getRootProps,
+      getInputProps,
+      disabled,
+      selectedFile,
+      responseStatus,
+      formDataToSend,
+      ...rest
+    }
+  },
+  methods: {
+    onFileSelected (event) {
+      this.selectedFile = event.target.files[0]
+      console.log(this.disabled)
+      if (this.selectedFile != null) {
+        this.disabled = false
+        this.uploadFile()
+      } else {
+        this.disabled = true
+      }
+    },
+    uploadFile () {
+      this.formDataToSend = new FormData()
+      this.formDataToSend.append('file', this.selectedFile)
+      console.log(this.formDataToSend.get('file'))
+      axios.post('http://localhost:5000/dataset', this.formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        //   'Content-Type': 'application/x-zip-compressed'
+        }
+      })
+        .then(response => {
+          this.responseStatus = response.status
+          console.log(response.data, this.formData)
+        }).catch(error => {
+          console.log(error, this.responseStatus)
+        })
+      // this.$emit('catchEmit')
+      if (this.responseStatus === 200 || this.responseStatus === 304) {
+        this.$emit('catchEmit')
+      }
+    }
+  }
+}
+</script>
+
+<style>
+.div2 {
+  height: 100px;
+  padding: 35px;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  border: 1px solid grey;
+}
+#file-button {
+  cursor: pointer;
+}
+</style>
