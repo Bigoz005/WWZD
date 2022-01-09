@@ -1,4 +1,5 @@
 <template>
+<div class="div1">
   <div class="div2">
     <div v-bind="getRootProps()">
       <input accept =".zip" v-bind="getInputProps()" />
@@ -12,6 +13,9 @@
   <div>
     <input id="file-button" type="file" @change="onFileSelected" accept =".zip"/>
   </div>
+  <br>
+  <b>If proper zip file will be uploaded graphs will show after file processing</b>
+</div>
 </template>
 
 <script>
@@ -114,6 +118,10 @@ export default {
   display: flex;
   text-align: center;
   justify-content: center;
+  border: 5px solid grey;
+}
+.div1 {
+  padding: 35px;
   border: 1px solid grey;
 }
 #file-button {
