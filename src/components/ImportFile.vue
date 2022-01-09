@@ -26,6 +26,12 @@ export default {
     let responseStatus = null
     const formDataToSend = new FormData()
 
+    function checkResponse () {
+      if (responseStatus === 200 || responseStatus === 304 || responseStatus === '200' || responseStatus === '304') {
+        emit('catchEmit')
+      }
+    }
+
     function onDrop (acceptFiles, rejectReasons) {
       selectedFile = null
       disabled = true
@@ -42,21 +48,15 @@ export default {
               'Content-Type': 'multipart/form-data'
             // 'Content-Type': 'application/x-zip-compressed'
             }
+          }).then(response => {
+            responseStatus = response.status
+            checkResponse()
+          }).catch(error => {
+            responseStatus = error
+            console.log(error)
           })
-            .then(response => {
-              responseStatus = response.status
-              console.log(response.data, formDataToSend)
-            }).catch(error => {
-              console.log(error, responseStatus)
-            })
-          // emit('catchEmit')
-          if (responseStatus === 200 || responseStatus === 304) {
-            emit('catchEmit')
-          }
         }
       })
-      // console.log('File to send: ', selectedFile)
-      // console.log('Rejected reason: ', rejectReasons)
     }
     const { getRootProps, getInputProps, ...rest } = useDropzone({ onDrop })
     return {
@@ -80,6 +80,11 @@ export default {
         this.disabled = true
       }
     },
+    checkResponse () {
+      if (this.responseStatus === 200 || this.responseStatus === 304 || this.responseStatus === '200' || this.responseStatus === '304') {
+        this.$emit('catchEmit')
+      }
+    },
     uploadFile () {
       this.formDataToSend = new FormData()
       this.formDataToSend.append('file', this.selectedFile)
@@ -92,14 +97,11 @@ export default {
       })
         .then(response => {
           this.responseStatus = response.status
-          console.log(response.data, this.formData)
+          this.checkResponse()
         }).catch(error => {
-          console.log(error, this.responseStatus)
+          this.responseStatus = error.response.status
+          console.log(error)
         })
-      // this.$emit('catchEmit')
-      if (this.responseStatus === 200 || this.responseStatus === 304) {
-        this.$emit('catchEmit')
-      }
     }
   }
 }
