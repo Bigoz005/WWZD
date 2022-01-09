@@ -22,6 +22,7 @@ import * as THREE from 'three'
 
 export default {
   name: 'PhotoCanvas',
+  props: ['datasetHash', 'isCeleba'],
   data () {
     return {
       selectedNumber: '000'
@@ -29,6 +30,7 @@ export default {
   },
   methods: {
     init: function () {
+      console.log(this.datasetHash)
       const divPCA = document.getElementById('scene-pca')
       const divUMAP = document.getElementById('scene-umap')
       this.scenePca = new THREE.Scene()
@@ -176,6 +178,100 @@ export default {
       this.umapData = await umap.json()
       console.log('umapData', this.umapData)
     },
+
+    getImagesFromHash: async function () {
+      if (!this.isCeleba) {
+        this.imagePieces = []
+        const image = new Image()
+
+        const xd = await fetch(
+        `http://localhost:5000/dataset/${this.datasetHash}/tilemap`
+        )
+
+        let xdblob = await xd.blob()
+
+        xdblob = xdblob.slice(0, xdblob.size, 'image/jpeg')
+        console.log(xdblob)
+        const objurl = URL.createObjectURL(xdblob)
+        image.src = objurl
+        this.image = image
+
+        this.image.onload = () => {
+          for (let y = 0; y < 100; ++y) {
+            for (let x = 0; x < 10; ++x) {
+              const canvas = document.createElement('canvas')
+              canvas.width = 50
+              canvas.height = 50
+              const context = canvas.getContext('2d')
+              context.drawImage(image, x * 50, y * 50, 50, 50, 0, 0, 50, 50)
+              const urled = canvas.toDataURL()
+              if (y === 99 && x === 9) {
+              } else {
+                this.imagePieces.push(urled)
+              }
+            }
+          }
+          console.log('numOfURLs:', this.imagePieces.length)
+        }
+
+        await this.getPCAFromHash()
+        await this.getUMAPFromHash()
+
+        const combined = this.imagePieces.map((image, i) => {
+          return {
+            image,
+            pcaData: this.pcaData.features[i],
+            umapData: this.umapData.features[i]
+          }
+        })
+
+        combined.forEach((elem, i) => {
+          var img = new THREE.MeshBasicMaterial({
+            map: new THREE.TextureLoader().load(elem.image)
+          })
+
+          var planePca = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), img)
+          planePca.overdraw = true
+
+          var planeUmap = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), img)
+          planeUmap.overdraw = true
+
+          if (elem.pcaData) {
+            planePca.position.x = elem.pcaData[0] * 10
+            planePca.position.y = elem.pcaData[1] * 10
+            planePca.position.z = elem.pcaData[2] * 10
+
+            this.scenePca.add(planePca)
+          }
+
+          if (elem.umapData) {
+            planeUmap.position.x = elem.umapData[0] * 10
+            planeUmap.position.y = elem.umapData[1] * 10
+            planeUmap.position.z = elem.umapData[2] * 10
+
+            this.sceneUmap.add(planeUmap)
+          }
+        })
+      }
+    },
+    getPCAFromHash: async function () {
+      if (!this.isCeleba) {
+        const pca = await fetch(
+          `http://localhost:5000/dataset/${this.datasetHash}/features/pca`
+        )
+        this.pcaData = await pca.json()
+        console.log('pcaData', this.pcaData)
+      }
+    },
+    getUMAPFromHash: async function () {
+      if (!this.isCeleba) {
+        const umap = await fetch(
+          `http://localhost:5000/dataset/${this.datasetHash}/features/umap`
+        )
+        this.umapData = await umap.json()
+        console.log('umapData', this.umapData)
+      }
+    },
     clearTree: function clearThree (obj) {
       while (obj.children.length > 0) {
         clearThree(obj.children[0])
@@ -195,7 +291,11 @@ export default {
       console.log(event.target.value)
       this.clearTree(this.scenePca)
       this.clearTree(this.sceneUmap)
-      this.getImages(0, event.target.value)
+      if (this.isCeleba) {
+        this.getImages(0, event.target.value)
+      } else {
+        this.getImagesFromHash()
+      }
       this.animate()
     },
     onClick: function () {
@@ -203,13 +303,21 @@ export default {
       console.log(num)
       this.clearTree(this.scenePca)
       this.clearTree(this.sceneUmap)
-      this.getImages(num, num)
+      if (this.isCeleba) {
+        this.getImages(num, num)
+      } else {
+        this.getImagesFromHash()
+      }
       this.animate()
     }
   },
   mounted () {
     this.$nextTick(function () {
-      this.getImages(0, '000')
+      if (this.isCeleba) {
+        this.getImages(0, '000')
+      } else {
+        this.getImagesFromHash()
+      }
       this.init()
       this.animate()
     })

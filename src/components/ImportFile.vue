@@ -1,4 +1,5 @@
 <template>
+<div class="div1">
   <div class="div2">
     <div v-bind="getRootProps()">
       <input accept =".zip" v-bind="getInputProps()" />
@@ -12,6 +13,9 @@
   <div>
     <input id="file-button" type="file" @change="onFileSelected" accept =".zip"/>
   </div>
+  <br>
+  <b>If proper zip file will be uploaded graphs will show after file processing</b>
+</div>
 </template>
 
 <script>
@@ -26,9 +30,9 @@ export default {
     let responseStatus = null
     const formDataToSend = new FormData()
 
-    function checkResponse () {
+    function checkResponse (data) {
       if (responseStatus === 200 || responseStatus === 304 || responseStatus === '200' || responseStatus === '304') {
-        emit('catchEmit')
+        emit('catchEmit', data)
       }
     }
 
@@ -50,7 +54,7 @@ export default {
             }
           }).then(response => {
             responseStatus = response.status
-            checkResponse()
+            checkResponse(response.data)
           }).catch(error => {
             responseStatus = error
             console.log(error)
@@ -80,9 +84,9 @@ export default {
         this.disabled = true
       }
     },
-    checkResponse () {
+    checkResponse (data) {
       if (this.responseStatus === 200 || this.responseStatus === 304 || this.responseStatus === '200' || this.responseStatus === '304') {
-        this.$emit('catchEmit')
+        this.$emit('catchEmit', data)
       }
     },
     uploadFile () {
@@ -97,7 +101,7 @@ export default {
       })
         .then(response => {
           this.responseStatus = response.status
-          this.checkResponse()
+          this.checkResponse(response.data)
         }).catch(error => {
           this.responseStatus = error.response.status
           console.log(error)
@@ -114,6 +118,10 @@ export default {
   display: flex;
   text-align: center;
   justify-content: center;
+  border: 5px solid grey;
+}
+.div1 {
+  padding: 35px;
   border: 1px solid grey;
 }
 #file-button {
