@@ -22,6 +22,7 @@ import * as THREE from 'three'
 
 export default {
   name: 'PhotoCanvas',
+  props: ['datasetHash'],
   data () {
     return {
       selectedNumber: '000'
@@ -29,6 +30,7 @@ export default {
   },
   methods: {
     init: function () {
+      console.log(this.datasetHash)
       const divPCA = document.getElementById('scene-pca')
       const divUMAP = document.getElementById('scene-umap')
       this.scenePca = new THREE.Scene()

@@ -26,9 +26,9 @@ export default {
     let responseStatus = null
     const formDataToSend = new FormData()
 
-    function checkResponse () {
+    function checkResponse (data) {
       if (responseStatus === 200 || responseStatus === 304 || responseStatus === '200' || responseStatus === '304') {
-        emit('catchEmit')
+        emit('catchEmit', data)
       }
     }
 
@@ -50,7 +50,7 @@ export default {
             }
           }).then(response => {
             responseStatus = response.status
-            checkResponse()
+            checkResponse(response.data)
           }).catch(error => {
             responseStatus = error
             console.log(error)
@@ -80,9 +80,9 @@ export default {
         this.disabled = true
       }
     },
-    checkResponse () {
+    checkResponse (data) {
       if (this.responseStatus === 200 || this.responseStatus === 304 || this.responseStatus === '200' || this.responseStatus === '304') {
-        this.$emit('catchEmit')
+        this.$emit('catchEmit', data)
       }
     },
     uploadFile () {
@@ -97,7 +97,7 @@ export default {
       })
         .then(response => {
           this.responseStatus = response.status
-          this.checkResponse()
+          this.checkResponse(response.data)
         }).catch(error => {
           this.responseStatus = error.response.status
           console.log(error)

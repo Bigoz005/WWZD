@@ -1,7 +1,7 @@
 <template>
   <div class='home'>
     <ImportFile v-if='!fileSubmited' @catchEmit='catchEmit'/>
-    <PhotoCanvas v-else />
+    <PhotoCanvas v-else :datasetHash='datasetHash'/>
   </div>
 </template>
 
@@ -15,7 +15,8 @@ export default defineComponent({
   // event: 'fileSubmited',
   data () {
     return {
-      fileSubmited: false
+      fileSubmited: false,
+      datasetHash: ''
     }
   },
   components: {
@@ -23,8 +24,9 @@ export default defineComponent({
     ImportFile
   },
   methods: {
-    catchEmit () {
+    catchEmit (data: string) {
       this.fileSubmited = true
+      this.datasetHash = data
     }
   }
 })
