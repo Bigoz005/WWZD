@@ -12,6 +12,7 @@
     </div>
     <div>
       <button id="btn-change-set" :disabled="selectedNumber !== '000'" v-on:click="onClick()">Change set</button>
+      <p>Move: WASD, Zoom: QE, Rotate: UIOJKL</p>
     </div>
     <div id="scene-pca">PCA</div>
     <div id="scene-umap">UMAP</div>
@@ -53,15 +54,22 @@ export default {
         0.1,
         1000
       )
+      this.cameraPca.near = 30
+
       this.cameraUmap = new THREE.PerspectiveCamera(
         75,
         (window.innerWidth / 2) / (window.innerHeight * 0.8),
         0.1,
         1000
       )
+      this.cameraUmap.near = 30
+
+      this.cameraPca.updateProjectionMatrix()
+      this.cameraUmap.updateProjectionMatrix()
 
       this.rendererPca = new THREE.WebGLRenderer()
       this.rendererUmap = new THREE.WebGLRenderer()
+
       this.rendererPca.setSize(window.innerWidth / 2, window.innerHeight * 0.8)
       divPCA.appendChild(this.rendererPca.domElement)
       this.rendererUmap.setSize(window.innerWidth / 2, window.innerHeight * 0.8)
@@ -73,6 +81,8 @@ export default {
 
       this.cameraPca.position.z = 300
       this.cameraUmap.position.z = 300
+
+      window.addEventListener('keydown', this.onKeyDown, true)
     },
     animate: function () {
       requestAnimationFrame(this.animate)
@@ -309,6 +319,60 @@ export default {
         this.getImagesFromHash()
       }
       this.animate()
+    },
+    onKeyDown: function (e) {
+      console.log('keyDown')
+      switch (e.keyCode) {
+        case 83: // W UP
+          this.cameraPca.position.y += 5
+          this.cameraUmap.position.y += 5
+          break
+        case 87: // S DOWN
+          this.cameraPca.position.y -= 5
+          this.cameraUmap.position.y -= 5
+          break
+        case 65: // A LEFT
+          this.cameraPca.position.x += 5
+          this.cameraUmap.position.x += 5
+          break
+        case 68: // D RIGHT
+          this.cameraPca.position.x -= 5
+          this.cameraUmap.position.x -= 5
+          break
+        case 81: // Q IN
+          this.cameraPca.position.z += 1
+          this.cameraUmap.position.z += 1
+          break
+        case 69: // E OUT
+          this.cameraPca.position.z -= 1
+          this.cameraUmap.position.z -= 1
+          break
+        // ROTATION
+        case 74: // J LEFT
+          this.cameraPca.rotation.z -= 0.01
+          this.cameraUmap.rotation.z -= 0.01
+          break
+        case 76: // L RIGHT
+          this.cameraPca.rotation.z += 0.01
+          this.cameraUmap.rotation.z += 0.01
+          break
+        case 73: // I UP
+          this.cameraPca.rotation.x -= 0.01
+          this.cameraUmap.rotation.x -= 0.01
+          break
+        case 75: // K DOWN
+          this.cameraPca.rotation.x += 0.01
+          this.cameraUmap.rotation.x += 0.01
+          break
+        case 85: // U DOWN
+          this.cameraPca.rotation.y += 0.01
+          this.cameraUmap.rotation.y += 0.01
+          break
+        case 79: // O DOWN
+          this.cameraPca.rotation.y -= 0.01
+          this.cameraUmap.rotation.y -= 0.01
+          break
+      }
     }
   },
   mounted () {
