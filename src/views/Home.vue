@@ -4,8 +4,10 @@
     <ImportFile @catchEmit='catchEmit'/>
     <br>
     <button id="btn-celeba" v-on:click="onClick()">Click for CelebA dataset</button>
+    <br>
+    <button id="btn-celeba" v-on:click="onClickColor()">Click for colored CelebA dataset</button>
     </div>
-    <PhotoCanvas v-else :datasetHash='datasetHash' :isCeleba='isCeleba'/>
+    <PhotoCanvas v-else :datasetHash='datasetHash' :isCeleba='isCeleba' :isColored="isColored"/>
   </div>
 </template>
 
@@ -20,6 +22,7 @@ export default defineComponent({
     return {
       fileSubmited: false,
       isCeleba: false,
+      isColored: false,
       datasetHash: ''
     }
   },
@@ -34,6 +37,12 @@ export default defineComponent({
     },
     onClick () {
       this.isCeleba = true
+      this.isColored = false
+      this.fileSubmited = true
+    },
+    onClickColor () {
+      this.isCeleba = true
+      this.isColored = true
       this.fileSubmited = true
     }
   }
